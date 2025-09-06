@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <div class="header">
+            <h1 class="header-title">Notes</h1>
+            <button id="showAddViewBtn" class="add-button">Add New Entry</button>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="subjectInput" class="input-field" placeholder="Create a New Subject...">
+            <button id="addSubjectBtn" class="add-button">Add Subject</button>
+        </div>
+
+        <div class="subject-section">
+            <h2 class="section-title">Subjects</h2>
+            <div id="subjectList" class="subject-list"></div>
+        </div>
+
+        <div id="main-view" class="view">
+            <div class="notes-section">
+                <h2 class="section-title" id="notesHeader">Notes</h2>
+                <div id="notesList" class="notes-list">
+                    <div class="empty-state">Select a subject to see its notes.</div>
+                </div>
+            </div>
+            <div class="files-section">
+                <h2 class="section-title" id="filesHeader">Files</h2>
+                <div id="fileList" class="file-list">
+                    <div class="empty-state">Select a subject to see its files.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="add-content-view" class="view hidden">
+            <h2 class="section-title" id="addContentHeader">Add New Entry to [Subject]</h2>
+            <div class="form-container">
+                <div class="form-group">
+                    <label for="noteInput">Write a Note</label>
+                    <textarea id="noteInput" class="note-textarea" placeholder="Type your thoughts here..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Or Upload a File</label>
+                    <label for="fileInput" class="file-input-label" id="fileInputLabel">Click to select a file</label>
+                    <input type="file" id="fileInput" style="display: none;">
+                </div>
+
+                <div class="form-actions">
+                    <span id="loadingIndicator" class="loading-indicator">Uploading...</span>
+                    <button id="cancelBtn" class="add-button cancel-button">Cancel</button>
+                    <button id="saveBtn" class="add-button">Save Entry</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="messageBox" class="message-box">
+        <span id="messageText"></span>
+        <button id="closeMessageBtn" class="message-close-btn">&times;</button>
+    </div>
+
+    <div id="file-modal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <button id="modal-close-btn" class="modal-close">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <div id="edit-note-modal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <button id="edit-modal-close-btn" class="modal-close">&times;</button>
+            <h2 class="section-title">Edit Note</h2>
+            <div class="form-container" style="padding: 0;">
+                <input type="hidden" id="edit-note-id">
+                <div class="form-group">
+                    <label for="edit-note-content">Note Content</label>
+                    <textarea id="edit-note-content" class="note-textarea"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button id="cancel-edit-btn" class="add-button cancel-button">Cancel</button>
+                    <button id="save-changes-btn" class="add-button">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>

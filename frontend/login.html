@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Journal App</title>
+    <style>
+        :root {
+            --bg-color-dark: #111827;
+            --bg-color-medium: #1f2937;
+            --text-color-light: #f3f4f6;
+            --text-color-medium: #6b7280;
+            --accent-color-primary: #10b981;
+            --accent-color-secondary: #059669;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: white;
+            color: var(--text-color-light);
+            font-family: sans-serif;
+        }
+
+        .auth-container {
+            background-color: var(--bg-color-medium);
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-title {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--accent-color-primary);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color-light);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-light);
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-color-primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+        }
+
+        .submit-button {
+            width: 100%;
+            background-color: var(--accent-color-primary);
+            color: #111827;
+            font-weight: bold;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        .submit-button:hover {
+            background-color: var(--accent-color-secondary);
+        }
+
+        .toggle-auth {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-color-medium);
+        }
+
+        .toggle-link {
+            color: var(--accent-color-primary);
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .toggle-link:hover {
+            text-decoration: underline;
+        }
+
+        #registerForm {
+            display: none;
+        }
+
+        .message-box {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            display: none;
+        }
+
+        .message-box.error {
+            background-color: #b91c1c;
+            color: #fee2e2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <!-- Login Form -->
+        <form id="loginForm">
+            <h1 class="auth-title">Login</h1>
+            <div id="loginMessageBox" class="message-box"></div>
+            <div class="input-group">
+                <label for="loginEmail" class="input-label">Email</label>
+                <input type="email" id="loginEmail" class="input-field" required>
+            </div>
+            <div class="input-group">
+                <label for="loginPassword" class="input-label">Password</label>
+                <input type="password" id="loginPassword" class="input-field" required>
+            </div>
+            <button type="submit" class="submit-button">Login</button>
+            <p class="toggle-auth">
+                Don't have an account? <a id="showRegister" class="toggle-link">Register</a>
+            </p>
+        </form>
+
+        <!-- Register Form -->
+        <form id="registerForm">
+            <h1 class="auth-title">Register</h1>
+            <div id="registerMessageBox" class="message-box"></div>
+            <div class="input-group">
+                <label for="registerUsername" class="input-label">Username</label>
+                <input type="text" id="registerUsername" class="input-field" required>
+            </div>
+            <div class="input-group">
+                <label for="registerEmail" class="input-label">Email</label>
+                <input type="email" id="registerEmail" class="input-field" required>
+            </div>
+            <div class="input-group">
+                <label for="registerPassword" class="input-label">Password</label>
+                <input type="password" id="registerPassword" class="input-field" required>
+            </div>
+            <button type="submit" class="submit-button">Register</button>
+            <p class="toggle-auth">
+                Already have an account? <a id="showLogin" class="toggle-link">Login</a>
+            </p>
+        </form>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const showRegister = document.getElementById('showRegister');
+        const showLogin = document.getElementById('showLogin');
+        const loginMessageBox = document.getElementById('loginMessageBox');
+        const registerMessageBox = document.getElementById('registerMessageBox');
+
+        // Switch to Register Form
+        showRegister.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        });
+
+        // Switch to Login Form
+        showLogin.addEventListener('click', () => {
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+        });
+
+        // Handle Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Login failed');
+                }
+
+                localStorage.setItem('token', data.token);
+                window.location.href = 'index.html'; // Redirect to main app
+
+            } catch (error) {
+                loginMessageBox.textContent = error.message;
+                loginMessageBox.className = 'message-box error';
+                loginMessageBox.style.display = 'block';
+            }
+        });
+
+        // Handle Registration
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Registration failed');
+                }
+                
+                localStorage.setItem('token', data.token);
+                window.location.href = 'index.html'; // Redirect to main app
+
+            } catch (error) {
+                registerMessageBox.textContent = error.message;
+                registerMessageBox.className = 'message-box error';
+                registerMessageBox.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
