@@ -36,7 +36,19 @@ const editNoteContentInput = document.getElementById("edit-note-content");
 const saveChangesBtn = document.getElementById("save-changes-btn");
 const cancelEditBtn = document.getElementById("cancel-edit-btn");
 const editModalCloseBtn = document.getElementById("edit-modal-close-btn");
-
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        // Remove the token from local storage
+        localStorage.removeItem('authToken');
+        
+        // Show a message to the user
+        alert("You have been logged out.");
+        
+        // Redirect to the login page
+        window.location.href = '/login.html';
+    });
+}
 
 // --- View Management ---
 function showView(viewId) {

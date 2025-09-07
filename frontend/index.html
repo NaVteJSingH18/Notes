@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Journal App</title>
+
     <link rel="stylesheet" href="style.css">
+            <script>
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            // If there's no token, send the user back to the login page
+            window.location.href = 'login.html';
+        }
+    </script>
 </head>
 <body>
     <div class="app-container">
@@ -12,6 +20,7 @@
         <div class="header">
             <h1 class="header-title">Notes</h1>
             <button id="showAddViewBtn" class="add-button">Add New Entry</button>
+            <button id="logoutBtn" class="add-button cancel-button">Logout</button> </div>
         </div>
 
         <div class="input-group">
