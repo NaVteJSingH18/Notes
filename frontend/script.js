@@ -40,7 +40,7 @@ const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
         // Remove the token from local storage
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
         
         // Show a message to the user
         alert("You have been logged out.");
