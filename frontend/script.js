@@ -46,7 +46,7 @@ if (logoutBtn) {
         alert("You have been logged out.");
         
         // Redirect to the login page
-        window.location.href = '/login.html';
+        window.location.href = './login.html';
     });
 }
 
