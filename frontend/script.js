@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://study-notes-backend.onrender.com';
 let selectedSubject = null;
 let messageTimeout;
 
