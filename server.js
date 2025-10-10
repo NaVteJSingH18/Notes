@@ -22,7 +22,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // --- 2. STATIC FILE SERVING (CRITICAL: MUST BE HERE) ---
 // This tells the server to look in the 'frontend' folder for files like index.html
 app.use(express.static(path.join(__dirname, 'frontend')));
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // --- 3. API ROUTES ---
 // Now, define your API routes after the static middleware
 app.use("/api/auth", authRoutes);

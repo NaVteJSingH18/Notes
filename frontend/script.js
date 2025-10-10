@@ -1,4 +1,4 @@
-const API_URL = 'https://study-notes-backend.onrender.com';
+const API_URL = 'http://localhost:5000/api';
 let selectedSubject = null;
 let messageTimeout;
 
@@ -37,6 +37,13 @@ const saveChangesBtn = document.getElementById("save-changes-btn");
 const cancelEditBtn = document.getElementById("cancel-edit-btn");
 const editModalCloseBtn = document.getElementById("edit-modal-close-btn");
 const logoutBtn = document.getElementById("logoutBtn");
+// Add these with your other DOM element selectors at the top
+const editSubjectModal = document.getElementById("edit-subject-modal");
+const editSubjectIdInput = document.getElementById("edit-subject-id");
+const editSubjectNameInput = document.getElementById("edit-subject-name");
+const saveSubjectChangesBtn = document.getElementById("save-subject-changes-btn");
+const cancelEditSubjectBtn = document.getElementById("cancel-edit-subject-btn");
+const editSubjectModalCloseBtn = document.getElementById("edit-subject-modal-close-btn");
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
         // Remove the token from local storage
@@ -91,6 +98,8 @@ async function fetchSubjects() {
     }
 }
 
+// REPLACE your existing fetchNotes function with this one
+
 async function fetchNotes(subjectId) {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -100,12 +109,15 @@ async function fetchNotes(subjectId) {
         });
         if (!response.ok) throw new Error('Network response was not ok');
         const notes = await response.json();
-        renderNotes(notes);
+        renderNotes(notes); // On success, this function will replace the loader with notes
     } catch (error) {
         console.error("Error fetching notes:", error);
-        showMessage("Failed to load notes.", "error");
+        // On failure, replace the loader with an error message
+        notesList.innerHTML = `<div class="empty-state" style="color: red;">Failed to load notes.</div>`;
     }
 }
+
+// REPLACE your existing fetchFiles function with this one
 
 async function fetchFiles(subjectId) {
     const token = localStorage.getItem('token');
@@ -116,17 +128,25 @@ async function fetchFiles(subjectId) {
         });
         if (!response.ok) throw new Error('Network response was not ok');
         const files = await response.json();
-        renderFiles(files);
+        renderFiles(files); // On success, this will replace the loader with files
     } catch (error) {
         console.error("Error fetching files:", error);
-        showMessage("Failed to load files.", "error");
+        // On failure, replace the loader with an error message
+        fileList.innerHTML = `<div class="empty-state" style="color: red;">Failed to load files.</div>`;
     }
 }
 
 // --- Rendering Functions ---
+// REPLACE your existing renderSubjects function with this one
+
 function renderSubjects(subjects) {
     subjectList.innerHTML = "";
     subjects.forEach(subject => {
+        // Create a container for the subject and its buttons
+        const subjectItem = document.createElement("div");
+        subjectItem.className = "subject-item";
+
+        // Create the main subject button (for selecting)
         const btn = document.createElement("button");
         btn.textContent = subject.name;
         btn.className = "subject-button";
@@ -134,17 +154,47 @@ function renderSubjects(subjects) {
             btn.classList.add("active");
         }
         btn.onclick = () => {
+            // This selection logic remains the same
             selectedSubject = { id: subject._id, name: subject.name };
             notesHeader.textContent = `Notes for: ${subject.name}`;
             filesHeader.textContent = `Files for: ${subject.name}`;
-            
+            notesList.innerHTML = '<div class="loader"></div>';
+            fileList.innerHTML = '<div class="loader"></div>';
             fetchNotes(selectedSubject.id);
             fetchFiles(selectedSubject.id); 
-            
             renderSubjects(subjects);
             showView('main-view');
         };
-        subjectList.appendChild(btn);
+
+        // Create a container for action buttons
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "subject-actions";
+
+        // Create Edit Button
+        const editBtn = document.createElement("button");
+        editBtn.innerHTML = '✏️';
+        editBtn.title = "Edit Subject";
+        editBtn.onclick = (e) => {
+            e.stopPropagation(); // Prevents the subject from being selected
+            openEditSubjectModal(subject._id, subject.name);
+        };
+
+        // Create Delete Button
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.title = "Delete Subject";
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation(); // Prevents the subject from being selected
+            deleteSubject(subject._id, subject.name);
+        };
+
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+
+        subjectItem.appendChild(btn);
+        subjectItem.appendChild(actionsDiv);
+        
+        subjectList.appendChild(subjectItem);
     });
 }
 
@@ -197,6 +247,8 @@ function renderNotes(notes) {
     }
 }
 
+// REPLACE your existing renderFiles function with this one
+
 function renderFiles(files) {
     fileList.innerHTML = "";
     if (files.length === 0) {
@@ -211,18 +263,18 @@ function renderFiles(files) {
     `;
 
     files.forEach(file => {
-        const cardButton = document.createElement("button");
-        cardButton.className = "file-card-button";
-        cardButton.title = `View ${file.name}`;
-
-        cardButton.innerHTML = `
+        // Main container is now a DIV instead of a BUTTON
+        const cardContainer = document.createElement("div");
+        cardContainer.className = "file-card";
+        cardContainer.title = `View ${file.name}`;
+        cardContainer.innerHTML = `
             ${fileIconSvg}
             <p class="file-name">${file.name}</p>
         `;
 
-        cardButton.addEventListener('click', () => {
+        // Event listener to open the file viewer modal
+        cardContainer.addEventListener('click', () => {
             modalBody.innerHTML = '';
-
             if (file.type.startsWith('image/')) {
                 const img = document.createElement('img');
                 img.src = file.url;
@@ -239,7 +291,20 @@ function renderFiles(files) {
             }
             openFileModal();
         });
-        fileList.appendChild(cardButton);
+        
+        // --- NEW DELETE BUTTON ---
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'file-delete-btn';
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.title = 'Delete File';
+        
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // VERY IMPORTANT: Prevents the card's click event from firing
+            deleteFile(file._id, file.name);
+        });
+
+        cardContainer.appendChild(deleteBtn);
+        fileList.appendChild(cardContainer);
     });
 }
 
@@ -468,3 +533,115 @@ editNoteModal.addEventListener('click', (event) => {
 // --- Initial App Load ---
 fetchSubjects();
 showView('main-view');
+// Add these new functions and listeners at the end of script.js
+
+// --- Functions for Subject Edit/Delete ---
+
+function openEditSubjectModal(subjectId, currentName) {
+    editSubjectIdInput.value = subjectId;
+    editSubjectNameInput.value = currentName;
+    editSubjectModal.classList.remove('hidden');
+}
+
+function closeEditSubjectModal() {
+    editSubjectModal.classList.add('hidden');
+}
+
+async function deleteSubject(subjectId, subjectName) {
+    const isConfirmed = confirm(`Are you sure you want to delete the subject "${subjectName}"? This will also delete all associated notes and files.`);
+    if (!isConfirmed) return;
+
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch(`${API_URL}/subjects/${subjectId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete subject.');
+        }
+
+        showMessage("Subject deleted successfully.", "success");
+        // If the deleted subject was the selected one, clear the view
+        if (selectedSubject && selectedSubject.id === subjectId) {
+            selectedSubject = null;
+            notesList.innerHTML = '<div class="empty-state">Select a subject to see its notes.</div>';
+            fileList.innerHTML = '<div class="empty-state">Select a subject to see its files.</div>';
+        }
+        fetchSubjects(); // Refresh the subjects list
+    } catch (error) {
+        showMessage(error.message, "error");
+    }
+}
+
+async function handleUpdateSubject() {
+    const subjectId = editSubjectIdInput.value;
+    const newName = editSubjectNameInput.value.trim();
+    const token = localStorage.getItem('token');
+
+    if (!newName) {
+        return showMessage("Subject name cannot be empty.", "error");
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/subjects/${subjectId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name: newName })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update subject.');
+        }
+
+        showMessage("Subject updated successfully.", "success");
+        closeEditSubjectModal();
+        // If the updated subject was the selected one, update its name
+        if (selectedSubject && selectedSubject.id === subjectId) {
+            selectedSubject.name = newName;
+            notesHeader.textContent = `Notes for: ${newName}`;
+            filesHeader.textContent = `Files for: ${newName}`;
+        }
+        fetchSubjects(); // Refresh the subjects list
+    } catch (error) {
+        showMessage(error.message, "error");
+    }
+}
+
+
+// --- Event Listeners for Edit Subject Modal ---
+saveSubjectChangesBtn.addEventListener('click', handleUpdateSubject);
+cancelEditSubjectBtn.addEventListener('click', closeEditSubjectModal);
+editSubjectModalCloseBtn.addEventListener('click', closeEditSubjectModal);
+editSubjectModal.addEventListener('click', (event) => {
+    if (event.target === editSubjectModal) {
+        closeEditSubjectModal();
+    }
+});
+// Add this new function at the end of script.js
+
+async function deleteFile(fileId, fileName) {
+    const isConfirmed = confirm(`Are you sure you want to delete the file "${fileName}"?`);
+    if (!isConfirmed) return;
+
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch(`${API_URL}/files/${fileId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete file.');
+        }
+
+        showMessage("File deleted successfully.", "success");
+        fetchFiles(selectedSubject.id); // Refresh the files list
+    } catch (error) {
+        showMessage(error.message, "error");
+    }
+}

@@ -19,18 +19,21 @@
         
         <div class="header">
             <h1 class="header-title">Notes</h1>
-            <button id="showAddViewBtn" class="add-button">Add New Entry</button>
+            
             <button id="logoutBtn" class="add-button cancel-button">Logout</button> </div>
+            
         </div>
 
         <div class="input-group">
             <input type="text" id="subjectInput" class="input-field" placeholder="Create a New Subject...">
             <button id="addSubjectBtn" class="add-button">Add Subject</button>
+            
         </div>
 
         <div class="subject-section">
             <h2 class="section-title">Subjects</h2>
             <div id="subjectList" class="subject-list"></div>
+            <button id="showAddViewBtn" class="add-button">Add New Entry</button>
         </div>
 
         <div id="main-view" class="view">
@@ -100,7 +103,23 @@
             </div>
         </div>
     </div>
-
+<div id="edit-subject-modal" class="modal-backdrop hidden">
+    <div class="modal-content">
+        <button id="edit-subject-modal-close-btn" class="modal-close">&times;</button>
+        <h2 class="section-title">Edit Subject</h2>
+        <div class="form-container" style="padding: 0;">
+            <input type="hidden" id="edit-subject-id">
+            <div class="form-group">
+                <label for="edit-subject-name">Subject Name</label>
+                <input type="text" id="edit-subject-name" class="input-field">
+            </div>
+            <div class="form-actions">
+                <button id="cancel-edit-subject-btn" class="add-button cancel-button">Cancel</button>
+                <button id="save-subject-changes-btn" class="add-button">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
     <script src="script.js" defer></script>
 </body>
 </html>
