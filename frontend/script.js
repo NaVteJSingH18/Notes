@@ -247,7 +247,7 @@ function renderNotes(notes) {
     }
 }
 
-// REPLACE your existing renderFiles function with this one
+
 
 function renderFiles(files) {
     fileList.innerHTML = "";
