@@ -209,7 +209,7 @@
             loginForm.style.display = 'block';
         });
 
-        // Handle Login
+        // --- CORRECTED LOGIN HANDLER ---
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
@@ -223,13 +223,25 @@
                 });
 
                 const data = await response.json();
+                
+                // Good Practice: Log the server response to see its structure
+                console.log('Login response from server:', data);
 
                 if (!response.ok) {
                     throw new Error(data.message || 'Login failed');
                 }
+                
+                // THE FIX: Access the token, which may be nested.
+                // It could be data.token, data.data.token, etc.
+                // We check for the most common patterns.
+                const token = data.token || (data.data && data.data.token);
 
-                localStorage.setItem('token', data.token);
-                window.location.href = 'index.html'; // Redirect to main app
+                if (token) {
+                    localStorage.setItem('token', token);
+                    window.location.href = 'index.html'; // Redirect to main app
+                } else {
+                    throw new Error('Login successful, but no token was received from the server.');
+                }
 
             } catch (error) {
                 loginMessageBox.textContent = error.message;
@@ -238,7 +250,7 @@
             }
         });
 
-        // Handle Registration
+        // --- CORRECTED REGISTRATION HANDLER ---
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('registerUsername').value;
@@ -254,12 +266,22 @@
 
                 const data = await response.json();
 
+                // Good Practice: Log the server response
+                console.log('Registration response from server:', data);
+
                 if (!response.ok) {
                     throw new Error(data.message || 'Registration failed');
                 }
                 
-                localStorage.setItem('token', data.token);
-                window.location.href = 'index.html'; // Redirect to main app
+                // THE FIX: Access the token, which may be nested.
+                const token = data.token || (data.data && data.data.token);
+                
+                if (token) {
+                    localStorage.setItem('token', token);
+                    window.location.href = 'index.html'; // Redirect to main app
+                } else {
+                    throw new Error('Registration successful, but no token was received.');
+                }
 
             } catch (error) {
                 registerMessageBox.textContent = error.message;

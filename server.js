@@ -2,59 +2,57 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const jwt = require("jsonwebtoken");
 const path = require('path');
 
-// Import routes ONCE at the top
+// Only load variables from the .env file if the app is NOT in a production environment.
+if (process.env.NODE_ENV !== 'production') {
+    dotenv.config();
+}
+
+// Import middleware
+const { protect } = require("./middlewares/authMiddleware");
+const { errorHandler } = require("./middlewares/errorMiddleware");
+
+// Import routes
 const authRoutes = require("./routes/authRoutes");
 const subjectRoutes = require("./routes/subjectRoutes");
 const noteRoutes = require("./routes/noteRoutes");
 const fileRoutes = require("./routes/fileRoutes");
 
-dotenv.config();
 const app = express();
 
-// --- 1. CORE MIDDLEWARE ---
+// --- Core Middleware ---
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// --- 2. STATIC FILE SERVING (CRITICAL: MUST BE HERE) ---
-// This tells the server to look in the 'frontend' folder for files like index.html
-app.use(express.static(path.join(__dirname, 'frontend')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-// --- 3. API ROUTES ---
-// Now, define your API routes after the static middleware
+// --- API Routes ---
 app.use("/api/auth", authRoutes);
 app.use("/api/subjects", protect, subjectRoutes);
 app.use("/api/notes", protect, noteRoutes);
 app.use("/api/files", protect, fileRoutes);
 
-// JWT Protection Middleware (Definition can be here)
-function protect(req, res, next) {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
-    if (!token) {
-        return res.status(401).json({ message: "No token, authorization denied" });
-    }
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (err) {
-        res.status(401).json({ message: "Invalid token" });
-    }
-}
+// --- Static File Serving ---
+app.use(express.static(path.join(__dirname, 'frontend')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Test route
-app.get("/api", (req, res) => { // Changed path to /api to avoid conflicts
-    res.send("Notes API is running...");
+// The "catch-all" handler: for any request that doesn't match one above,
+// send back the main index.html file.
+// --- THE FIX IS HERE ---
+// Using a Regular Expression to match all paths to avoid parsing errors.
+app.get(/(.*)/, (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'frontend', 'index.html'));
 });
 
-// DB connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB connected"))
-    .catch(err => console.error(err));
+// --- Global Error Handling ---
+app.use(errorHandler);
 
-// Start server
+// --- Server & DB Connection ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+        app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+        console.log("MongoDB connected");
+    })
+    .catch(err => console.error('Could not connect to MongoDB:', err));
+
